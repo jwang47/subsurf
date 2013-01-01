@@ -1,0 +1,8 @@
+bin/
+gen/
+
+*.dll
+*.class
+
+.cache
+local.properties
