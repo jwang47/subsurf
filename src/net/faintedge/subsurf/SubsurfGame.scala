@@ -18,6 +18,7 @@ import net.faintedge.template.slick.Box2DBodyRenderer
 import net.faintedge.util.WorldHelper
 import org.newdawn.fizzy.World
 import org.newdawn.fizzy.Shape
+import net.faintedge.core.PlayerEntity
 
 object SubsurfGame extends BasicGame("Subsurf") {
   
@@ -66,7 +67,7 @@ object SubsurfGame extends BasicGame("Subsurf") {
       entities.add(entity)
     }
 
-    player = new CircleEntity(world, (0, -100), 5.0f, Color.orange)
+    player = new PlayerEntity(world, (0, -100), 5.0f, 10.0f, Color.orange)
     player.addControl(new ForceControl())
     entities.add(player)
   }

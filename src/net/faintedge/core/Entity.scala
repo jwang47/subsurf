@@ -1,17 +1,19 @@
 package net.faintedge.core
+import scala.collection.JavaConversions._
 import scala.collection.mutable.HashSet
+
+import org.jbox2d.dynamics.Filter
 import org.newdawn.fizzy.Body
-import org.newdawn.fizzy.Circle
 import org.newdawn.fizzy.DynamicBody
 import org.newdawn.fizzy.Shape
 import org.newdawn.fizzy.World
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
+
+import net.faintedge.fizzy.FFCircle
+import net.faintedge.fizzy.FFRectangle
 import net.faintedge.math.Constants
 import net.faintedge.subsurf.GameConstants
-import scala.collection.JavaConversions._
-import net.faintedge.fizzy.FFCircle
-import org.jbox2d.dynamics.Filter
 
 object Entity {
   val DEFAULT_RESTITUTION = 0.2f
@@ -22,8 +24,10 @@ abstract class Entity(world: World, spawn: (Float, Float) = (0, 0)) {
   val shape: Shape = constructShape(); shape.setRestitution(GameConstants.DEFAULT_ENTITY_RESTITUTION)
   val body: Body[Entity] = new DynamicBody(shape, spawn._1, spawn._2)
   body.setUserData(this)
+  onConstructBody(body)
   world.add(body)
 
+  def onConstructBody(body: Body[Entity]) {}
   def constructShape(): Shape
   def subRender(g: Graphics)
 
@@ -62,4 +66,31 @@ class CircleEntity(world: World, spawn: (Float, Float) = (0, 0), radius: Float, 
     g.drawOval(-radius, -radius, radius * 2, radius * 2)
     g.drawLine(0, 0, 0, -radius.toInt)
   }
+}
+
+class RectEntity(world: World, spawn: (Float, Float) = (0, 0), width: Float, height: Float, color: Color) extends Entity(world, spawn) {
+  def constructShape() = {
+    /*val filter = new Filter()
+    filter.categoryBits = 0x0002
+    filter.maskBits = 0x0001*/
+    new FFRectangle(width, height/*, filter = filter*/)
+  }
+  
+  override def onConstructBody(body: Body[Entity]) {
+    body.setFixedRotation(true)
+  }
+  
+  def subRender(g: Graphics) {
+    g.setColor(color)
+    g.drawRect(0, 0, width, height)
+    g.drawLine(width.toInt/2, height.toInt/2, width.toInt/2, 0)
+  }
+}
+
+class PlayerEntity(world: World, spawn: (Float, Float) = (0, 0), width: Float, height: Float, color: Color) extends RectEntity(world, spawn, width, height, color) {
+  
+  override def onConstructBody(body: Body[Entity]) {
+    body.setFixedRotation(true)
+  }
+  
 }
