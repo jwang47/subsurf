@@ -1,22 +1,19 @@
 package net.faintedge.subsurf
+import org.jbox2d.dynamics.Body
+import org.jbox2d.dynamics.World
 import org.newdawn.slick.Color
+import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
-import net.faintedge.util.WorldHelper
-import org.jbox2d.dynamics.BodyDef
-import org.newdawn.fizzy.World
-import org.newdawn.fizzy.Body
-import org.newdawn.fizzy.StaticBody
-import org.newdawn.fizzy.Rectangle
-import org.newdawn.fizzy.DynamicBody
+import net.faintedge.fiber.shape.Rectangle
+import net.faintedge.fiber.Control
+import net.faintedge.fiber.Renderable
+import org.jbox2d.dynamics.BodyType
+import net.faintedge.fiber.physics.PhysicsManager
+import org.jbox2d.dynamics.Filter
 
-class Tile(var typ: Int) {
-
-}
-
-case class TileInfo(val typ: Int, val name: String, val renderer: TileRenderer) {
-
-}
+class Tile(var typ: Int)
+case class TileInfo(val typ: Int, val name: String, val renderer: TileRenderer)
 
 abstract class TileRenderer {
   def render(x: Float, y: Float, width: Int, height: Int)
@@ -32,7 +29,7 @@ class NullTileRenderer extends TileRenderer {
   def render(x: Float, y: Float, width: Int, height: Int) {}
 }
 
-class TilePage(val width: Int, val height: Int, val tileWidth: Int = 15, val tileHeight: Int = 15) {
+class TilePage(val tileData: Array[TileInfo], val width: Int, val height: Int, val tileWidth: Int = 15, val tileHeight: Int = 15) extends Control with Renderable {
   var tiles = Util.ofDim[Tile](width, height, () => new Tile(0))
 
   def totalWidth = tileWidth * width
@@ -40,71 +37,17 @@ class TilePage(val width: Int, val height: Int, val tileWidth: Int = 15, val til
 
   def setTile(row: Int, col: Int, typ: Int) = tiles(col)(row).typ = typ
   def getTileType(row: Int, col: Int): Int = tiles(col)(row).typ
-}
 
-class PhysicsTilePage(width: Int, height: Int, world: World, tileWidth: Int = 15, tileHeight: Int = 15) extends TilePage(width, height, tileWidth, tileHeight) {
-  val tileBodies = Array.ofDim[Body[Tile]](width, height)
-  val borderHorizontalThickness = tileHeight
-  val borderVerticalThickness = tileWidth
-  val borderHorizontalShape = new Rectangle(totalWidth, tileHeight)
-  val borderVerticalShape = new Rectangle(tileWidth, totalHeight)
-
-  val borderBodies = Array[Body[PhysicsTilePage]](
-    new StaticBody[PhysicsTilePage](borderHorizontalShape, -totalWidth / 2 - tileWidth / 2, totalHeight / 2 - tileHeight / 2),
-    new StaticBody[PhysicsTilePage](borderHorizontalShape, -totalWidth / 2 - tileWidth / 2, -totalHeight / 2 - borderHorizontalThickness - tileHeight / 2),
-    new StaticBody[PhysicsTilePage](borderVerticalShape, -totalWidth / 2 - borderVerticalThickness - tileWidth / 2, -totalHeight / 2 - tileHeight / 2),
-    new StaticBody[PhysicsTilePage](borderVerticalShape, totalWidth / 2 - tileWidth + tileWidth / 2, -totalHeight / 2 - tileHeight / 2))
-    
-  for(borderBody <- borderBodies) {
-    borderBody.setUserData(this)
-    borderBody.setRestitution(GameConstants.DEFAULT_TILE_RESTITUTION)
-    world.add(borderBody)
-  }
-  //  world.add(new StaticBody(borderHorizontalShape, -totalWidth/2 - tileWidth/2, totalHeight/2 - tileHeight/2))
-  //  world.add(new StaticBody(borderHorizontalShape, -totalWidth/2 - tileWidth/2, -totalHeight/2 - borderHorizontalThickness - tileHeight/2))
-  //  world.add(new StaticBody(borderVerticalShape, -totalWidth/2 - borderVerticalThickness - tileWidth/2, -totalHeight/2  - tileHeight/2))
-  //  world.add(new StaticBody(borderVerticalShape, totalWidth/2 - tileWidth + tileWidth/2, -totalHeight/2  - tileHeight/2))
-
-  override def setTile(row: Int, col: Int, typ: Int) {
-    if (tiles(col)(row).typ == 0 && typ != 0) {
-      // create new static body for tile of type typ
-      assert(tileBodies(col)(row) == null)
-      val shape = new Rectangle(tileWidth, tileHeight)
-      val body = new StaticBody[Tile](shape,
-        col * tileWidth - totalWidth / 2 - tileWidth / 2,
-        row * tileHeight - totalHeight / 2 - tileHeight / 2)
-      body.setRestitution(GameConstants.DEFAULT_TILE_RESTITUTION)
-      body.setUserData(tiles(col)(row))
-      world.add(body)
-      tileBodies(col)(row) = body
-    } else if (tiles(col)(row).typ != 0 && typ == 0) {
-      // destroy static body at row,col
-      assert(tileBodies(col)(row) != null)
-      world.remove(tileBodies(col)(row))
-      tileBodies(col)(row) = null
+  override def render(gc: GameContainer, g: Graphics) {
+    for (col <- 0 until width; row <- 0 until height) {
+      val tileInfo = tileData(getTileType(row, col))
+      val tilePosition = getTilePosition(row, col)
+      tileInfo.renderer.render(tilePosition._1, tilePosition._2, tileWidth, tileHeight)
     }
-    super.setTile(row, col, typ)
   }
-}
-
-class TilePageRenderer(page: TilePage) {
-  def tileWidth = page.tileWidth
-  def tileHeight = page.tileHeight
-  def totalWidth = page.totalWidth
-  def totalHeight = page.totalHeight
 
   def getTilePosition(row: Int, col: Int): Tuple2[Int, Int] = {
     (col * tileWidth - totalWidth / 2, row * tileHeight - totalHeight / 2)
-  }
-
-  def render(g: Graphics) {
-    for (col <- 0 until page.width) {
-      for (row <- 0 until page.height) {
-        val tileInfo = TileData.tileInfos(page.getTileType(row, col))
-        val tilePosition = getTilePosition(row, col)
-        tileInfo.renderer.render(tilePosition._1, tilePosition._2, tileWidth, tileHeight)
-      }
-    }
   }
 
   def fillTile(g: Graphics, row: Int, col: Int, color: Color) {
@@ -114,9 +57,36 @@ class TilePageRenderer(page: TilePage) {
   }
 }
 
-object TileData {
-  val tileInfos = Array(
-    TileInfo(0, "empty", new NullTileRenderer()),
-    TileInfo(1, "mud", new ImageTileRenderer(new Image("data/30.png"))),
-    TileInfo(2, "stone", new ImageTileRenderer(new Image("data/21.png"))))
+class PhysicsTilePage(val tileFilter: Filter, tileData: Array[TileInfo], width: Int, height: Int, tileWidth: Int = 15, tileHeight: Int = 15)
+  extends TilePage(tileData, width, height, tileWidth, tileHeight) {
+  def world = PhysicsManager.world
+
+  val tileBodies = Array.ofDim[Body](width, height)
+  val borderHorizontalShape = new Rectangle(totalWidth, tileHeight)
+  val borderVerticalShape = new Rectangle(tileWidth, totalHeight)
+
+  val borderBodies = Array(
+    PhysicsHelper.newBody(world, BodyType.STATIC, borderHorizontalShape, this, -tileWidth / 2, totalHeight / 2, filter = tileFilter),
+    PhysicsHelper.newBody(world, BodyType.STATIC, borderHorizontalShape, this, -tileWidth / 2, -totalHeight / 2 - tileHeight, filter = tileFilter),
+    PhysicsHelper.newBody(world, BodyType.STATIC, borderVerticalShape, this, -totalWidth / 2 - tileWidth, -tileHeight / 2, filter = tileFilter),
+    PhysicsHelper.newBody(world, BodyType.STATIC, borderVerticalShape, this, totalWidth / 2, -tileHeight / 2, filter = tileFilter))
+
+  override def setTile(row: Int, col: Int, typ: Int) {
+    if (tiles(col)(row).typ == 0 && typ != 0) {
+      // create new static body for tile of type typ
+      assert(tileBodies(col)(row) == null)
+      val shape = new Rectangle(tileWidth, tileHeight)
+      val body = PhysicsHelper.newBody(world, BodyType.STATIC, shape, tiles(col)(row),
+        col * tileWidth - totalWidth / 2,
+        row * tileHeight - totalHeight / 2,
+        filter = tileFilter)
+      tileBodies(col)(row) = body
+    } else if (tiles(col)(row).typ != 0 && typ == 0) {
+      // destroy static body at row,col
+      assert(tileBodies(col)(row) != null)
+      world.destroyBody(tileBodies(col)(row))
+      tileBodies(col)(row) = null
+    }
+    super.setTile(row, col, typ)
+  }
 }
