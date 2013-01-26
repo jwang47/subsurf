@@ -1,9 +1,13 @@
 package net.faintedge.subsurf
 import org.jbox2d.dynamics.Filter
-import org.newdawn.slick.Color
+import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Image
+import org.newdawn.slick.Color
+
+import net.faintedge.fiber.EntityConversions._
 import net.faintedge.fiber.controls.CircleForm
+import net.faintedge.fiber.controls.CircleRender
 import net.faintedge.fiber.controls.ImageRender
 import net.faintedge.fiber.controls.RectangleForm
 import net.faintedge.fiber.controls.RectangleRender
@@ -11,11 +15,17 @@ import net.faintedge.fiber.controls.Transform
 import net.faintedge.fiber.physics.Physics
 import net.faintedge.fiber.Application
 import net.faintedge.fiber.Entity
-import net.faintedge.fiber.EntityConversions._
-import net.faintedge.fiber.controls.CircleRender
+import net.faintedge.fiber.GameState
 
 object SubsurfGame extends Application("subsurf") {
   def main(args: Array[String]) = SubsurfGame.start()
+  override def initStatesList(gc: GameContainer) {
+    addState(new PlayState(this))
+  }
+
+}
+
+class PlayState(app: Application) extends GameState(app) {
 
   val backgroundCategory = 1
   val defaultCategory = 2
@@ -30,12 +40,12 @@ object SubsurfGame extends Application("subsurf") {
 
   var player: Entity = null
   var tilePage: TilePage = null
-
-  override def init(gc: GameContainer) {
+  
+  override def init(gc: GameContainer, game: StateBasedGame) {
     initWorld
     initUi
 
-    cam.follow(player)
+    app.cam.follow(player)
   }
 
   private def initUi {
@@ -66,5 +76,4 @@ object SubsurfGame extends Application("subsurf") {
     root += player
     root += tilePageEntity
   }
-
 }
