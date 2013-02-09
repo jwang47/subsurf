@@ -11,6 +11,7 @@ import net.faintedge.fiber.Renderable
 import org.jbox2d.dynamics.BodyType
 import net.faintedge.fiber.physics.PhysicsManager
 import org.jbox2d.dynamics.Filter
+import net.faintedge.fiber.controls.Render
 
 class Tile(var typ: Int)
 case class TileInfo(val typ: Int, val name: String, val renderer: TileRenderer)
@@ -29,7 +30,7 @@ class NullTileRenderer extends TileRenderer {
   def render(x: Float, y: Float, width: Int, height: Int) {}
 }
 
-class TilePage(val tileData: Array[TileInfo], val width: Int, val height: Int, val tileWidth: Int = 15, val tileHeight: Int = 15) extends Control with Renderable {
+class TilePage(val tileData: Array[TileInfo], val width: Int, val height: Int, val tileWidth: Int = 15, val tileHeight: Int = 15) extends Render {
   var tiles = Util.ofDim[Tile](width, height, () => new Tile(0))
 
   def totalWidth = tileWidth * width
@@ -38,7 +39,7 @@ class TilePage(val tileData: Array[TileInfo], val width: Int, val height: Int, v
   def setTile(row: Int, col: Int, typ: Int) = tiles(col)(row).typ = typ
   def getTileType(row: Int, col: Int): Int = tiles(col)(row).typ
 
-  override def render(gc: GameContainer, g: Graphics) {
+  override def subRender(gc: GameContainer, g: Graphics) {
     for (col <- 0 until width; row <- 0 until height) {
       val tileInfo = tileData(getTileType(row, col))
       val tilePosition = getTilePosition(row, col)
@@ -47,7 +48,7 @@ class TilePage(val tileData: Array[TileInfo], val width: Int, val height: Int, v
   }
 
   def getTilePosition(row: Int, col: Int): Tuple2[Int, Int] = {
-    (col * tileWidth - totalWidth / 2, row * tileHeight - totalHeight / 2)
+    (col * tileWidth - totalWidth / 2, -(row * tileHeight - totalHeight / 2))
   }
 
   def fillTile(g: Graphics, row: Int, col: Int, color: Color) {

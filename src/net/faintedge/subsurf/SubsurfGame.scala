@@ -5,6 +5,7 @@ import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Image
 import org.newdawn.slick.Color
 
+import net.faintedge.fiber.Application
 import net.faintedge.fiber.EntityConversions._
 import net.faintedge.fiber.controls.CircleForm
 import net.faintedge.fiber.controls.CircleRender
@@ -13,7 +14,6 @@ import net.faintedge.fiber.controls.RectangleForm
 import net.faintedge.fiber.controls.RectangleRender
 import net.faintedge.fiber.controls.Transform
 import net.faintedge.fiber.physics.Physics
-import net.faintedge.fiber.Application
 import net.faintedge.fiber.Entity
 import net.faintedge.fiber.GameState
 

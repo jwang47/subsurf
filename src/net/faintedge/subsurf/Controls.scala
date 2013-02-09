@@ -23,8 +23,8 @@ class ForceControl(val force: Float = 1) extends Control with Updatable {
   val forceVector = new Vector2(0, 0)
   override def update(delta: Float) {
     forceVector := (0, 0)
-    if (SubsurfGame.app.getInput().isKeyDown(Input.KEY_W)) { forceVector.y -= force }
-    if (SubsurfGame.app.getInput().isKeyDown(Input.KEY_S)) { forceVector.y += force }
+    if (SubsurfGame.app.getInput().isKeyDown(Input.KEY_W)) { forceVector.y += force }
+    if (SubsurfGame.app.getInput().isKeyDown(Input.KEY_S)) { forceVector.y -= force }
     if (SubsurfGame.app.getInput().isKeyDown(Input.KEY_A)) { forceVector.x -= force }
     if (SubsurfGame.app.getInput().isKeyDown(Input.KEY_D)) { forceVector.x += force }
     physics.body.applyLinearImpulse(forceVector, physics.body.getPosition())
@@ -41,7 +41,7 @@ class TileSelector(val tilePage: TilePage) extends Control with Updatable with R
   private def getSelectedTile(mouseLocation: (Float, Float), cameraOffset: Vector2): (Int, Int) = {
     // calculate mouse location in TilePage space (top left corner of TilePage = 0,0)
     val mouseX = mouseLocation._1 - cameraOffset.x + tilePage.totalWidth / 2
-    val mouseY = mouseLocation._2 - cameraOffset.y + tilePage.totalHeight / 2
+    val mouseY = -(mouseLocation._2 - cameraOffset.y - tilePage.totalHeight / 2)
     // get tile associated with the mouse location
     val tileRow = ((mouseY + tilePage.tileHeight / 2) / tilePage.tileHeight).toInt
     val tileCol = ((mouseX + tilePage.tileWidth / 2) / tilePage.tileWidth).toInt
