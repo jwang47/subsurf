@@ -39,7 +39,7 @@ class PlayState(app: Application) extends GameState(app) {
   bgFilter.maskBits = backgroundCategory | defaultCategory
 
   var player: Entity = null
-  var tilePage: TilePage = null
+  var tileMap: TileMap = null
   
   override def init(gc: GameContainer, game: StateBasedGame) {
     initWorld
@@ -49,7 +49,7 @@ class PlayState(app: Application) extends GameState(app) {
   }
 
   private def initUi {
-    root += new Entity("selector", Array(new TileSelector(tilePage)))
+    //root += new Entity("selector", Array(new TileSelector(tileMap)))
   }
 
   private def initWorld {
@@ -61,12 +61,12 @@ class PlayState(app: Application) extends GameState(app) {
       TileInfo(1, "mud", new ImageTileRenderer(new Image("data/30.png"))),
       TileInfo(2, "stone", new ImageTileRenderer(new Image("data/21.png"))))
 
-    val tilePageEntity = new Entity("tile page", Array(new Transform(), new PhysicsTilePage(bgFilter, tileData, 40, 30)))
-    val tilePageOption = tilePageEntity.getControl(classOf[TilePage])
-    tilePage = tilePageOption.get
-    for (col <- 0 until tilePage.width; row <- 0 until tilePage.height) {
+    val tileMapEntity = new Entity("tile page", Array(new Transform(), new TileMap(bgFilter, tileData, 1, 2)))
+    val tileMapOption = tileMapEntity.getControl(classOf[TileMap])
+    tileMap = tileMapOption.get
+    for (col <- 0 until tileMap.totalWidthInTiles; row <- 0 until tileMap.totalHeightInTiles) {
       if (Math.random < 0.1) {
-        tilePage.setTile(row, col, 1)
+        tileMap.setTile(row, col, 1)
       }
     }
 
@@ -74,6 +74,6 @@ class PlayState(app: Application) extends GameState(app) {
     root += new Entity("test box", Array(new Transform(0, 0, (Math.Pi / 4).toFloat), new Physics(filter = defaultFilter), new RectangleForm(10, 10), new RectangleRender(Color.white)))
     root += new Entity("test circle", Array(new Transform(), new Physics(filter = defaultFilter), new CircleForm(10), new CircleRender(Color.white)))
     root += player
-    root += tilePageEntity
+    root += tileMapEntity
   }
 }

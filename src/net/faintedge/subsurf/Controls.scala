@@ -11,6 +11,7 @@ import net.faintedge.fiber.Renderable
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Color
+import net.faintedge.fiber.controls.RenderManager
 
 class Player extends Control with Updatable {
   override def update(delta: Float) {
@@ -37,6 +38,14 @@ class TileSelector(val tilePage: TilePage) extends Control with Updatable with R
 
   def input = SubsurfGame.app.getInput()
   def camera = SubsurfGame.cam
+  
+  override def activate() {
+    RenderManager.add(this)
+  }
+  
+  override def deactivate() {
+    RenderManager.remove(this)
+  }
 
   private def getSelectedTile(mouseLocation: (Float, Float), cameraOffset: Vector2): (Int, Int) = {
     // calculate mouse location in TilePage space (top left corner of TilePage = 0,0)
