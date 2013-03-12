@@ -10,6 +10,14 @@
       <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
     </src_description>
   </component>
+  <component name="FacetManager">
+    <facet type="scala" name="Scala">
+      <configuration>
+        <option name="compilerLibraryLevel" value="Project" />
+        <option name="compilerLibraryName" value="scala-compiler" />
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/bin" />
     <exclude-output />
@@ -59,6 +67,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="fiber" level="project" />
+    <orderEntry type="library" name="scala-library" level="project" />
   </component>
 </module>
 
