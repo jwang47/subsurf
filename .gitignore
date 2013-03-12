@@ -6,3 +6,5 @@ gen/
 
 .cache
 local.properties
+
+.idea/
